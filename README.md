@@ -115,3 +115,7 @@ Best model within allowed validation accuracy degradation:
 If you use our code, please cite:
 
 Itay Evron, Edward Moroshko, and Koby Crammer. 2018. **Efficient Loss-Based Decoding on Graphs For Extreme Classification**. Advances in Neural Information Processing Systems (32). arxiv:[1803.03319](https://arxiv.org/abs/1803.03319)
+
+## Contact
+
+Feel free to contact us by email: evron.itay at gmail.com
