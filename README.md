@@ -1,7 +1,6 @@
 # W-LTLS
 
-Itay Evron, Edward Moroshko, and Koby Crammer. 2018. **Efficient Loss-Based Decoding On Graphs For Extreme Classification**. NIPS 2018. 
-arxiv:[1803.03319](https://arxiv.org/abs/1803.03319)
+Itay Evron, Edward Moroshko, and Koby Crammer. 2018. [**Efficient Loss-Based Decoding On Graphs For Extreme Classification**](https://arxiv.org/abs/1803.03319). NIPS 2018.
 
 ## Downloading the data
 
