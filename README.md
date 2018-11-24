@@ -2,7 +2,7 @@
 
 Implementation of the learning algorithm proposed in:
 
-Itay Evron, Edward Moroshko, and Koby Crammer. 2018. [**Efficient Loss-Based Decoding On Graphs For Extreme Classification**](https://arxiv.org/abs/1803.03319). NIPS 2018.
+Itay Evron, Edward Moroshko, and Koby Crammer. 2018. [**Efficient Loss-Based Decoding On Graphs For Extreme Classification**](https://arxiv.org/abs/1803.03319). NeurIPS 2018.
 
 Some of our ideas and methods are based on [Log-time and Log-space Extreme Classification](https://arxiv.org/abs/1611.01964) and its [code](https://github.com/kjasinska/ltls).
 
