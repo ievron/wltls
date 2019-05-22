@@ -46,8 +46,6 @@ def DAG_heaviest_path_lengths(G, W, s, topologicalSort = None):
 
     lengths = {v: (-np.infty, None) for v in topologicalSort}
 
-    # We sort at every iteration instead of using sorted list because apparently it's faster
-    # Every list should be saved sorted
     lengths[s] = (0, None)
 
     # Viterbi algorithm, start from after the source
