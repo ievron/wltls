@@ -120,4 +120,4 @@ Itay Evron, Edward Moroshko, and Koby Crammer. 2018. **Efficient Loss-Based Deco
 
 ## Contact
 
-Feel free to contact us by email: evron.itay at gmail.com
+Feel free to contact us by email: mail(at)evron.me
