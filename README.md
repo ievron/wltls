@@ -10,7 +10,7 @@ Some of our ideas and methods are based on [Log-time and Log-space Extreme Class
 
 ## Downloading the data
 
-The multiclass datasets can be downloaded from [PD-Sparse](http://www.cs.utexas.edu/~xrhuang/PDSparse/).
+The multiclass datasets can be downloaded from [PD-Sparse](https://github.com/a061105/ExtremeMulticlass).
 
 ## Documentation
 
