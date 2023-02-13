@@ -9,7 +9,7 @@ from WLTLS.decoding.decodingLosses import expLoss
 from graphs import Graph, DAG_k_heaviest_path_lengths, restorePathsFromParents
 import networkx as nx
 import numpy as np
-from aux_lib import pairwise
+from aux_lib import pairwise, print_debug
 from scipy.sparse import csr_matrix
 
 #########################################################################
@@ -42,7 +42,7 @@ class HeaviestPaths():
 
         self.initLossMatrix()
 
-        print("Created a heaviest path decoder with {} edges.".format(self._edgesNum))
+        print_debug("Created a heaviest path decoder with {} edges.".format(self._edgesNum))
 
     # Create an auxiliary binary matrix for *fast* calculation of losses (preparing weights)
     # Useful to employ the reduction to *any* loss function (See Section 5 in the paper)

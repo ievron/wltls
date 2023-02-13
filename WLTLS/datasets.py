@@ -83,16 +83,23 @@ def load_dataset(path_train, path_valid, path_test, n_features, multilabel=False
         le.set_classes(classes_)
         Y = le.transform(Y)
         Yvalid = le.transform(Yvalid)
-    return X, Y, Xvalid, Yvalid, Xtest, Ytest
+    return X, Y, Xvalid, Yvalid, Xtest, Ytest, le
 
 def read(path, dataset, printSummary = True):
+    Xtrain, Ytrain, Xvalid, Yvalid, Xtest, Ytest, LABELS, DIMS, _ = \
+        read_full(path, dataset, printSummary)
+
+    return Xtrain, Ytrain, Xvalid, Yvalid, Xtest, Ytest, LABELS, DIMS
+
+
+def read_full(path, dataset, printSummary = True):
     t = Timing()
 
     specificPath = "{0}/{1}/{1}".format(path, dataset.name)
 
     sorted_extension = "_sorted" if dataset.name == "bibtex" else ""
 
-    Xtrain, Ytrain, Xvalid, Yvalid, Xtest, Ytest = \
+    Xtrain, Ytrain, Xvalid, Yvalid, Xtest, Ytest, le = \
         load_dataset(
             "{}.train{}".format(specificPath, sorted_extension),
             "{}.heldout{}".format(specificPath, sorted_extension),
@@ -113,16 +120,18 @@ def read(path, dataset, printSummary = True):
         print(("{} dataset '{}':\n" +
               "\tLoaded in:\t{:}\n" +
               "\tLabels:\t\tK={:,}\n" +
-               "\tFeatures:\td={:,} ({:.1f} non-zero features on average)").format(
+               "\tFeatures:\td={:,} ({:.1f} non-zero features on average)\n" +
+               "\tSamples:\t{:,} / {:,} / {:,}").format(
             "Multi-label" if dataset.multilabel else "Multi-class",
             dataset.name,
-            t.get_elapsed_time(), LABELS, DIMS, effectiveDim))
+            t.get_elapsed_time(), LABELS, DIMS, effectiveDim,
+            len(Ytrain), len(Yvalid), len(Ytest)))
 
-    return Xtrain, Ytrain.astype(np.int), Xvalid, Yvalid.astype(np.int), Xtest, Ytest.astype(np.int), LABELS, DIMS
+    return Xtrain, Ytrain.astype(np.int), Xvalid, Yvalid.astype(np.int), Xtest, Ytest.astype(np.int), LABELS, DIMS, le
 
 
 class DatasetParams:
-    def __init__(self, name, epochs, multilabel, n_features):
+    def __init__(self, name, epochs, multilabel, n_features, early_stop=True, returnBest=True, step_size=1):
         if multilabel:
             raise NotImplementedError
 
@@ -130,6 +139,9 @@ class DatasetParams:
         self.epochs = epochs
         self.multilabel = multilabel
         self.n_features = n_features
+        self.early_stop = early_stop
+        self.return_best = returnBest
+        self.step_size = step_size
 
 class datasets:
     #                               name,               epochs,   multilabel,   n_features

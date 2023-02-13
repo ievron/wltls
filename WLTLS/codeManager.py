@@ -5,6 +5,8 @@ See https://github.com/ievron/wltls/ for more technical and license information.
 
 import numpy as np
 import abc
+
+from aux_lib import print_debug
 from graphs.binaryTree import BinaryTree
 
 
@@ -30,7 +32,7 @@ class CodeManager(metaclass=abc.ABCMeta):
         self._buildCodingMatrix(allCodes)
         self._initMappings()
 
-        print("Using a {} path assignment policy.".format(self.getName()))
+        print_debug("Using a {} path assignment policy.".format(self.getName()))
 
     # Get the column vector of a specific bit in the coding matrix
     def getCodingBit(self, col):
@@ -48,8 +50,6 @@ class CodeManager(metaclass=abc.ABCMeta):
     def _buildCodingMatrix(self, allCodes):
         # This helps computations during training only
         self.codingMatrix = np.zeros((self.LABELS, self._bitsNum), dtype=np.int8)
-
-        np.random.shuffle(allCodes)
 
         for idx, code in enumerate(allCodes):
             self.codingMatrix[idx, :] = code
@@ -165,3 +165,31 @@ class GreedyCodeManager(CodeManager):
         self._mapCodeToLabel(label, codeIdx)
 
         return self.codingMatrix[codeIdx]
+
+
+#############################################################################################
+# Assigns codewords to labels by a given mapping.
+# The i-th label in labelPermutation will belong to the i-th codeword.
+#############################################################################################
+class FixedCodeManager(CodeManager):
+    def __init__(self, LABELS, allCodes, labelPermutation):
+        self.labelPermutation = labelPermutation
+
+        super().__init__(LABELS, allCodes)
+
+    @staticmethod
+    def getName():
+        return "Fixed"
+
+    def _initMappings(self):
+        self._codeIdxToLabel = [None] * self.LABELS
+        self._labelToCodeIdx = [None] * self.LABELS
+
+        prmt = self.labelPermutation
+
+        for idx, i in enumerate(prmt):
+            self._codeIdxToLabel[idx] = i
+            self._labelToCodeIdx[i] = idx
+
+    def assignLabel(self, label, potentialCodes):
+        raise RuntimeError("Shouldn't have reached here")

@@ -4,6 +4,8 @@ See https://github.com/ievron/wltls/ for more technical and license information.
 """
 
 import networkx as nx
+
+from aux_lib import print_debug
 from graphs import Graph
 from math import log
 
@@ -31,7 +33,7 @@ class TrellisGraph(Graph):
 
         super(TrellisGraph, self).__init__()
 
-        print("Created a trellis graph with a slice width of b={}.".format(self.sliceWidth))
+        print_debug("Created a trellis graph with a slice width of b={}.".format(self.sliceWidth))
 
     # Checks if the edge is a shortcut edge to the sink (see paper)
     def isEdgeShortcut(self, edge):

@@ -8,6 +8,9 @@ import numpy as np
 #############################################################################################
 # A W-LTLS model.
 #############################################################################################
+from aux_lib import print_debug
+
+
 class WltlsModel():
     POTENTIAL_PATH_NUM = 20
     LABELS = 0
@@ -16,12 +19,13 @@ class WltlsModel():
     _learners = None
     _decoder = None
 
-    def __init__(self, LABELS, DIM, learnerClass, codeManager, decoder, isMultilabel = False):
+    def __init__(self, LABELS, DIM, learnerClass, codeManager, decoder, isMultilabel = False,
+                 step_size = None):
         if isMultilabel:
             raise NotImplementedError
 
         self.codeManager = codeManager
-        learners = [learnerClass(DIM) for _ in range(self.codeManager._bitsNum)]
+        learners = [learnerClass(DIM, step_size=step_size) for _ in range(self.codeManager._bitsNum)]
 
         self.LABELS = LABELS
         self.DIM = DIM
@@ -31,7 +35,7 @@ class WltlsModel():
 
         self._decoder = decoder
         self.loss = decoder.loss
-        print("Model size: {0:.1f}MB".format(self.getModelSize() / 1024 ** 2))
+        print_debug("Model size: {0:,.1f}MB".format(self.getModelSize() / 1024 ** 2))
 
     def getActualLabels(self, y):
         return y.indices if self._isMultilabel else [y]
@@ -82,7 +86,7 @@ class WltlsModel():
         return yPredicted
 
     def train(self, X, Y):
-        # Switches the decoding to test mode
+        # Switches the decoding to train mode
         for l in self._learners:
             l.train()
 
@@ -107,6 +111,10 @@ class WltlsModel():
     # Compute the values of the binary functions on an input x
     def _getMargins(self, x):
         return [l.score(x) for l in self._learners]
+
+    # Compute the values of the binary functions on an input x on a subset of predictors
+    def _getPartialMargins(self, x, learners=1):
+        return [l.score(x) for l in self._learners[:learners]]
 
     # Prepare for evaluation
     def eval(self):

@@ -29,6 +29,10 @@ def int2base(x, base):
 
     return digits
 
+def print_debug(txt, flush=None, end=None):
+    from time import gmtime, strftime
+    print("[{}] {}".format(strftime("%y-%m-%d %H:%M", gmtime()), txt), flush=flush, end=end)
+
 # A time measuring class
 class Timing:
     m_start = None

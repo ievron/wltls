@@ -19,12 +19,14 @@ class AROW(Learner):
     _eta = 0.85 # (see the paper of AROW)
     _phi = None
 
-    def __init__(self, DIM):
+    def __init__(self, DIM, step_size=1):
         super().__init__(DIM)
 
         # Initialize the mean vector and covariance (diagonal) matrix
         self.mean = np.zeros((self.DIM,), dtype=np.float32)
         self.covariance = np.ones((self.DIM,), dtype=np.float16) # It seemed to us that float16 is enough (empirically)
+
+        self.step_size = step_size
 
         # Constant to calculate only once
         self._phi = norm.ppf(self._eta)
@@ -42,7 +44,6 @@ class AROW(Learner):
     def refit(self, x, y, actualMargin):
         # Check if the top negative code is not far enough from the lowest positive code
         if (y * actualMargin) <= self.margin:
-
             # Calculate m_i and v_i (The margin is already given in the parameters)
             # Not necessary when actual margin is given: m_i = np.dot(x.data, y).dot(self.mean[x.indices])
             m_i = y * actualMargin
@@ -54,9 +55,16 @@ class AROW(Learner):
             beta_i = 1 / (v_i + self._r)
             alpha_i = max(1 - m_i, 0) * beta_i
 
+            if not hasattr(self, 'step_size'):
+                self.step_size = 4
+
             # Update means and covariance
-            self.mean[x.indices] += alpha_i * y * covG
+            self.mean[x.indices] += self.step_size * alpha_i * y * covG
             self.covariance[x.indices] -= beta_i * np.power(covG, 2) # Taking only the diagonal
+
+            return True
+
+        return False
 
     def score(self, x):
         # The score is computed solely from the mean vectors

@@ -1,8 +1,12 @@
 # W-LTLS
 
-Implementation of the learning algorithm proposed in:
+Implementation of the learning algorithm proposed in:  
 
-Itay Evron, Edward Moroshko, and Koby Crammer. 2018. [**Efficient Loss-Based Decoding On Graphs For Extreme Classification**](https://arxiv.org/abs/1803.03319). NeurIPS 2018.
+[**Efficient Loss-Based Decoding On Graphs For Extreme Classification**](https://arxiv.org/abs/1803.03319) (NeurIPS 2018)
+  
+and the codeword-to-class assignment method proposed in:  
+
+[**The Role of Codeword-to-Class Assignments in Error-Correcting Codes: An Empirical Study**](https://arxiv.org/abs/2302.05334) (AISTATS 2023).
 
 A summary of our work can be found in the [NeurIPS 2018 Poster](https://github.com/ievron/wltls/blob/master/Poster.pdf).
 
@@ -10,7 +14,7 @@ Some of our ideas and methods are based on [Log-time and Log-space Extreme Class
 
 ## Downloading the data
 
-The multiclass datasets can be downloaded from [PD-Sparse](http://www.cs.utexas.edu/~xrhuang/PDSparse/).
+The multiclass datasets can be downloaded from [PD-Sparse](https://github.com/a061105/ExtremeMulticlass).
 
 ## Documentation
 
@@ -51,9 +55,11 @@ optional arguments:
   --sparse              Experiment sparse models at the end of training
 ```
 
-## Example 
+## Basic Example 
 
-Below is a command for training a W-LTLS model with a slice width of 5 on the `sector` dataset.
+Our code can be run either by running the `example_run_basic.py` script or through the command prompt, as explained below.
+
+Here we show how to train a W-LTLS model with a slice width of 5 on the `sector` dataset.
 At the end of training, an experiment of sparse models is run.
 Notice that a data directory in the following structure is required (as downloaded from [PD-Sparse](http://www.cs.utexas.edu/~xrhuang/PDSparse/)):
 ```
@@ -112,12 +118,49 @@ Best model within allowed validation accuracy degradation:
 ================================================================================
 ```
 
+## Similarity preserving codeword-to-class assignments
+
+The default behavior of our algorithm randomly assigns codewords (or paths in the coding DAG) to classes.  
+In Evron et al. (2023), it is shown that assigning similar codewords to similar classes improves generalization. 
+
+![Improvements of similarity-preserving assignments](figure_assignments.png)
+
+Therefore, our updated repository supports this option as well. 
+
+We provide such an example in `example_run_basic.py` with a precomputed similarity preserving assignment.
+We currently provide such assignments for `aloi.bin` and `LSHTC1`.    
+To compute such an assignment for a new dataset, we need a class hierarchy in the form of a [networkx](https://networkx.org/) tree (DiGraph).
+See the example in `example_compute_assignments.py`. 
+
+More details can be found in Section 4.2 and Appendix F in Evron et al. (2023).
+
 ## Citation
 
-If you use our code, please cite:
+1. If you use our code, please cite:  
+Evron, Moroshko, and Crammer. [**Efficient Loss-Based Decoding On Graphs For Extreme Classification**](https://arxiv.org/abs/1803.03319). NeurIPS 2018.
+    ```
+    @article{evron2018efficient,
+      title={Efficient loss-based decoding on graphs for extreme classification},
+      author={Evron, Itay and Moroshko, Edward and Crammer, Koby},
+      journal={Advances in Neural Information Processing Systems},
+      volume={31},
+      year={2018}
+    }
+    ```
 
-Itay Evron, Edward Moroshko, and Koby Crammer. 2018. **Efficient Loss-Based Decoding on Graphs For Extreme Classification**. Advances in Neural Information Processing Systems (32). arxiv:[1803.03319](https://arxiv.org/abs/1803.03319)
+2. If you also use the similarity-preserving codeword-to-class assignments, please also cite:  
+Evron, Onn, Weiss Orzech, Azeroual, and Soudry. [**The Role of Codeword-to-Class Assignments in Error-Correcting Codes: An Empirical Study.**](https://arxiv.org/abs/2302.05334) AISTATS 2023.
+    ```
+    @inproceedings{evron2023assignments,
+      title={The Role of Codeword-to-Class Assignments in Error-Correcting Codes: An Empirical Study},
+      author={Evron, Itay and Onn, Ophir and Weiss Orzech, Tamar and Azeroual, Hai and Souudry, Daniel},
+      booktitle={International Conference on Artificial Intelligence and Statistics},
+      year={2023},
+      organization={PMLR}
+    }
+    ```
+
 
 ## Contact
 
-Feel free to contact us by email: evron.itay at gmail.com
+Feel free to contact us by email: itay(at)evron.me

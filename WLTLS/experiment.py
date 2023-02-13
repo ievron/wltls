@@ -6,7 +6,7 @@ See the paper for more details on the different losses.
 """
 
 import numpy as np
-from aux_lib import Timing
+from aux_lib import Timing, print_debug
 import random
 
 #########################################################################
@@ -23,9 +23,9 @@ class Experiment():
     def __init__(self, model, epochs = 1):
         self._model = model
         self.EPOCHS = epochs
-        self.trainAccuracies = np.zeros((self.EPOCHS,), dtype=np.float16)
-        self.validAccuracies = np.zeros((self.EPOCHS,), dtype=np.float16)
-        self.trainTimes = np.zeros((self.EPOCHS,), dtype=np.int16)
+        self.trainAccuracies = []
+        self.validAccuracies = []
+        self.trainTimes = []
 
     # Test the model on a given set
     def _test(self, X, Y):
@@ -63,7 +63,7 @@ class Experiment():
     def _runEpoch(self, id, Xtrain, Ytrain, Xvalid, Yvalid):
         Xtrain, Ytrain = self._shuffleDataset(Xtrain, Ytrain)
 
-        print("Train epoch {}/{}: ".format(id + 1, self.EPOCHS), end='', flush=True)
+        print_debug("Train epoch {}/{}: ".format(id + 1, self.EPOCHS), end='', flush=True)
 
         t = Timing()
         t.start()
@@ -72,22 +72,26 @@ class Experiment():
 
         trainAccuracy = 100 * self.evaluateScore(Ytrain, yPredicted)
 
-        self.trainAccuracies[id] = trainAccuracy
-        self.trainTimes[id] = t.get_elapsed_secs()
-        print("{:.1f}% in {}.\t".format(
+        self.trainAccuracies.append(trainAccuracy)
+        self.trainTimes.append(t.get_elapsed_secs())
+        print("\033[92m{:.2f}%\033[0m in {}.\t".format(
             trainAccuracy, t.get_elapsed_time()), end='', flush=True)
 
         # Validation
         validRes = self._test(Xvalid, Yvalid)
-        self.validAccuracies[id] = validRes["accuracy"]
-        print('Validation: {:.1f}% ({}).\t'.format(validRes["accuracy"], Timing.secondsToString(validRes["time"])), end='', flush=True)
+        self.validAccuracies.append(validRes["accuracy"])
+        print('Validation: \033[92m{:.2f}%\033[0m ({}).\t'.format(validRes["accuracy"], Timing.secondsToString(validRes["time"])), end='', flush=True)
 
         if id == 0 and validRes["extra_output"] is not None:
             print(validRes["extra_output"], end=' ', flush=True)
 
         return validRes
 
-    def run(self, Xtrain, Ytrain, Xvalid, Yvalid, Xtest, Ytest, modelLogPath=None,
+    def run(self, Xtrain, Ytrain, Xvalid, Yvalid, Xtest, Ytest,
+            earlyStop=False,
+            forceStop=False,
+            modelLogPath=None,
+            computeAverageLoss=True,
             returnBestValidatedModel = False):
         bestRes = 0
 
@@ -99,12 +103,26 @@ class Experiment():
             sys.setrecursionlimit(10 ** 5)
 
         # Run training epochs
-        for epoch in range(0, self.EPOCHS):
-            validRes = self._runEpoch(epoch, Xtrain, Ytrain, Xvalid, Yvalid)
+        epoch = 0
+        requireAnotherEpoch = True
+        notImproved = 0
+        while epoch < self.EPOCHS or (requireAnotherEpoch and not forceStop):
+            requireAnotherEpoch = False
 
+            validRes = self._runEpoch(epoch, Xtrain, Ytrain, Xvalid, Yvalid, )
+
+            if validRes["accuracy"] < bestRes:
+                notImproved += 1
+
+                # If didn't improve for two epochs => stop
+                if notImproved == 2 and earlyStop:
+                    print_debug("Early stopping!")
+                    break
             # If our validation score is the highest so far
-            if validRes["accuracy"] > bestRes:
+            else:
+                notImproved = 0
                 bestRes = validRes["accuracy"]
+                requireAnotherEpoch = True
 
                 # We save the model to file whenever we reach a better validation performance,
                 # so that if the simulation will be terminated for some reason
@@ -126,29 +144,36 @@ class Experiment():
                     del tSave
 
             print("")
+            epoch += 1
 
         # If we need to return the best validated model, load it from file before continuing
         if returnBestValidatedModel:
             del self._model
 
-            self._model = np.load(modelLogPath + ".npz")["ltls"][()]
+            self._model = np.load(modelLogPath + ".npz", allow_pickle=True)["ltls"][()]
 
         # Test
         testRes = self._test(Xtest, Ytest)
-        print('Test accuracy: {:.1f}% ({})'.format(testRes["accuracy"], Timing.secondsToString(testRes["time"])))
+        print_debug('Test accuracy: {:.1f}% ({})'.format(testRes["accuracy"], Timing.secondsToString(testRes["time"])))
 
-        # Calculate average binary loss
-        decodingLoss = self._calcBitwiseLoss(Xtrain, Ytrain)
-        print("Average binary loss: {:.2f}".format(decodingLoss))
+        if computeAverageLoss:
+            # Calculate average binary loss
+            decodingLoss = self._calcBitwiseLoss(Xtrain, Ytrain, learners=30)
+            print_debug("Average binary loss: {:,.2f}".format(decodingLoss))
 
 
 
     # Calculate the average binary loss (\epsilon in the paper)
-    def _calcBitwiseLoss(self, X, Y):
+    def _calcBitwiseLoss(self, X, Y, learners=None):
         lossFunc = self._model.loss
 
-        loss = np.array([lossFunc(self._model._getMargins(x),
-                                  self._model.codeManager.labelToCode(y))
-                         for x,y in zip(X,Y)])
+        if learners is None:
+            loss = np.array([lossFunc(self._model._getMargins(x),
+                                      self._model.codeManager.labelToCode(y))
+                             for x,y in zip(X,Y)])
+        else:
+            loss = np.array([lossFunc(self._model._getPartialMargins(x, learners),
+                                      self._model.codeManager.labelToCode(y)[:learners])
+                             for x,y in zip(X,Y)])
 
         return np.mean(loss)
