@@ -161,6 +161,16 @@ Evron, Onn, Weiss Orzech, Azeroual, and Soudry. [**The Role of Codeword-to-Class
     ```
 
 
+```
+@article{evron2018efficient,
+  title={Efficient loss-based decoding on graphs for extreme classification},
+  author={Evron, Itay and Moroshko, Edward and Crammer, Koby},
+  journal={Advances in Neural Information Processing Systems},
+  volume={31},
+  year={2018}
+}
+```
+
 ## Contact
 
 Feel free to contact us by email: itay(at)evron.me
